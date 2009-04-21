@@ -1,0 +1,23 @@
+.week_summary {
+	font-size:120%;
+	font-weight:bold;
+}
+.worker_name {
+	font-weight:bold;
+	font-size:130%;
+	padding:3px;
+	color:#555555;
+	text-align:center;
+}
+.positive_delta {
+	font-weight:bold;color:#00FF00;
+}
+.negative_delta {
+	 font-weight:bold;color:#FF0000;
+}
+.general_tt_total_title {
+	font-weight:bold;text-align:right;
+}
+.general_tt_total {
+	font-weight:bold;font-size:130%;color:#555555;
+}

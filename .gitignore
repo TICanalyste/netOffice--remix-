@@ -1,0 +1,9 @@
+/files
+.project
+.buildpath
+/.settings
+test.php
+_config-truong
+/includes/settings.php
+/includes/settings_blank.php
+/includes/settings_blank.php.old
