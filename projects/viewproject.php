@@ -288,7 +288,7 @@ $idPriority = $projectDetail->pro_priority[0];
     $block1->openForm('../projects/listprojects.php#' . $block1->form . 'Anchor');
 
     #$block1->headingToggle($strings['project'] . ' : ' . $projectDetail->pro_name[0]);
-    $block1->headingToggle($strings['details']);
+    $block1->headingToggle($strings['details']. "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[estimated time: $estimated_time - actual time: $proj_time]");
 
     if ($_SESSION['idSession'] == $projectDetail->pro_owner[0] || $enable_cvs == 'true' || $_SESSION['profilSession'] == '0' || $_SESSION['profilSession'] == '5') {
         $block1->openPaletteIcon();

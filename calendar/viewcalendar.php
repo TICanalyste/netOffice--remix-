@@ -113,12 +113,12 @@ if ($firstday == 0) {
     
     //Default week Calendar
     if($displayStyle!="month") {
-    	echo "<div id='webcalendar' style='width:70%;height:680px;float:left;'><iframe frameborder='0' src='http://webcalendar.banlieues.be/week.php?date=$dateCalendWC&user=".$banUsers[$worker_id]."' type='text/html' width='100%' height='100%'>Pas d'iFrame, pas de contenu.</iframe></div>";
-    	echo "<div id='timesheet_encode' style='float:left;width:30%;height:680px;padding:0px;'><iframe frameborder='0' src='$applicationFolder/_addon/addon_hours_summary.php?dateCalend=$dateCalend&display=week&worker_id=$worker_id' type='text/html' width='100%' height='100%'></iframe></div>";
+    	echo "<div id='webcalendar' style='width:70%;height:680px;float:left;'><iframe frameborder='0' src='$webCalendarURL/week.php?date=$dateCalendWC&user=".$banUsers[$worker_id]."' type='text/html' width='100%' height='100%'>Pas d'iFrame, pas de contenu.</iframe></div>";
+    	echo "<div id='timesheet_encode' style='float:left;width:30%;height:680px;padding:0px;'><iframe frameborder='0' src='../_addon/addon_hours_summary.php?dateCalend=$dateCalend&display=week&worker_id=$worker_id' type='text/html' width='100%' height='100%'></iframe></div>";
     } else {
 	    //Month Calendar
-    	echo "<div id='webcalendar' style='width:70%;height:1000px;float:left;'><iframe frameborder='0' src='http://webcalendar.banlieues.be/month.php?year=".$yearCalend."&month=".$monthCalend."' type='text/html' width='100%' height='100%'></iframe></div>";
-    	echo "<div id='timesheet_encode' style='float:left;width:30%;height:1000px;padding:0px;'><iframe frameborder='0' src='$applicationFolder/_addon/addon_hours_summary.php?dateCalend=$dateCalend&display=month&worker_id=$worker_id'' type='text/html' width='100%' height='100%'></iframe></div>";
+    	echo "<div id='webcalendar' style='width:70%;height:1000px;float:left;'><iframe frameborder='0' src='$webCalendarURL/month.php?year=".$yearCalend."&month=".$monthCalend."' type='text/html' width='100%' height='100%'></iframe></div>";
+    	echo "<div id='timesheet_encode' style='float:left;width:30%;height:1000px;padding:0px;'><iframe frameborder='0' src='../_addon/addon_hours_summary.php?dateCalend=$dateCalend&display=month&worker_id=$worker_id'' type='text/html' width='100%' height='100%'></iframe></div>";
     }
     
     echo "</td></tr>";

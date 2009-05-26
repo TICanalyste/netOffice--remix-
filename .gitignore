@@ -3,6 +3,7 @@
 .buildpath
 /.settings
 test.php
+/00_docs
 _config-truong
 /includes/settings.php
 /includes/settings_blank.php

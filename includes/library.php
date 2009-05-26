@@ -365,6 +365,7 @@ if ($gmtTimezone == 'true') {
 // update sorting table if query sort column
 if (!empty($sor_cible) && $sor_champs != 'none') {
     $tmpquery = 'UPDATE ' . $tableCollab['sorting'] . " SET $sor_cible = '$sor_champs $sor_ordre' WHERE member = '" . $_SESSION['idSession'] . "'";
+    //echo "sorting update : $tmpquery";
     connectSql($tmpquery);
 }
 

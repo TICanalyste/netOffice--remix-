@@ -20,8 +20,11 @@ if($httpHost=="127.0.0.1") $isInProduction=false;
 if($isInProduction) {
 	$applicationFolder="";
 } else {
-	$applicationFolder="/netoffice";
+	$applicationFolder="/netoffice.banlieues.be";
 }
+
+//External WebCalendar URL
+$webCalendarURL="http://webcalendar.banlieues.be";
 
 //Task Time Types
 //Default = 1
@@ -59,6 +62,7 @@ define('ALL_WORKERS','all');
 
 define('VARTYPE_BOOL',0);
 define('VARTYPE_INT',1);
+define('VARTYPE_TXT',2);
 
 //Translate netOffice user ID into WebCalendar user names
 $banUsers=array();

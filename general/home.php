@@ -21,6 +21,14 @@ $checkSession = true;
 require_once('../includes/library.php');
 $pageSection='home';
 
+/*
+ * Gestion du tri se fait via :
+javascript:document.xwbTForm.sor_cible.value='home_tasks';
+document.xwbTForm.sor_champs.value='tas.name';
+document.xwbTForm.sor_ordre.value='DESC';
+document.xwbTForm.submit();
+*/
+
 /**
  * --- Task Timer ---
  *  
@@ -29,6 +37,7 @@ $pageSection='home';
 /**
  * TODO Check that idSession is numeric 
  */
+$timerToggleScript="";
 $activeTask=0;
 $activeTaskStart=0;
 $existingtasktimer = new request();
@@ -36,13 +45,13 @@ $query="SELECT task, start FROM no_tasks_timer WHERE owner = {$_SESSION['idSessi
 $existingtasktimer->connectClass();
 $existingtasktimer->query($query);
 if($foundtasktimer=$existingtasktimer->fetch()) {
-	echo $foundtasktimer[0];
+//	echo $foundtasktimer[0];
 	$activeTask=$foundtasktimer[0];
 	$activeTaskStart=$foundtasktimer[1]; 
 } else {
-	echo "nothing found";
+//	echo "nothing found";
 }
-echo $_SESSION['idSession'];
+//echo $_SESSION['idSession'];
 
 /**
  * TODO Add timer begin date and time at the end of task name 
@@ -405,6 +414,7 @@ require_once('../themes/' . THEME . '/header.php');
 		#"tas.id",
 		"tas.priority",
 		"tas.name",
+		"tas.published",
 		"tas.status",
 		"tas.completion",
 		"tas.due_date",
@@ -414,6 +424,7 @@ require_once('../themes/' . THEME . '/header.php');
 	));
 
 	$tmpquery = "WHERE tas.assigned_to = '$_SESSION[idSession]' AND tas.status IN(0,2,3) AND pro.status IN(0,2,3) AND tas.milestone = '1' ORDER BY $block2->sortingValue";
+//	echo $tmpquery;
 
 	$listTasks = new request();
 	$listTasks->openTasks($tmpquery);
@@ -473,18 +484,20 @@ require_once('../themes/' . THEME . '/header.php');
 	        "30");
 
 	        //--- timer ---
-	        
-	        
-	        
-	        //Select appropriate icon according to timer status
-	        if($listTasks->tas_id[$i]==$activeTask) {
-	        	$timerIcon="time_running";
-	        } else {
-	        	$timerIcon="time_go";
-	        }
 	        //Display icon
-	        $block2->cellRow('<a href="javascript:toggleTimer('.$listTasks->tas_id[$i].');"><img id="timer_'.$listTasks->tas_id[$i].'_icon" src="../interface/icones/'.$timerIcon.'.gif" border="0"></a>',true);
-	        
+	        $timerIcon="time_go";
+	        $block2->cellRow('<div id="timer_'.$listTasks->tas_id[$i].'_text"></div><a href="javascript:toggleTimer('.$listTasks->tas_id[$i].');"><img id="timer_'.$listTasks->tas_id[$i].'_icon" src="../interface/icones/'.$timerIcon.'.gif" border="0"></a>',true);
+        
+		    //Select appropriate icon according to timer status
+	        if($listTasks->tas_id[$i]==$activeTask) {
+	        	//$timerIcon="time_running";
+	        	$timerToggleScript="toggleTimerIcon({$listTasks->tas_id[$i]},1)";
+	        	$timerToggleScript.="\n toggleTimerText({$listTasks->tas_id[$i]},'$activeTaskStart')";
+	        } else {
+	        	//$timerIcon="time_go";
+	        	//$timerToggleScript="";
+	        }
+			
 	        
 			//--- status ---
 	        $block2->cellRow('<img src="../themes/' . THEME . '/gfx_status/' . $idStatus . '.gif" alt="' . $status[$idStatus] . '">&nbsp;' . $status[$idStatus], '', true);
@@ -895,3 +908,6 @@ require_once('../themes/' . THEME . '/header.php');
 require_once("../themes/" . THEME . "/footer.php");
 
 ?>
+<script language="javascript">
+	<?php echo $timerToggleScript; ?>
+</script>

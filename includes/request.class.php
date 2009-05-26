@@ -639,13 +639,15 @@ class request {
             //$this->tim_org_name[] = ($row[12]);
             //$this->tim_svc_nam[] = ($row[13]);
             //$this->tim_tas_name[] = ($row[14]);
+            
+			//invoiced > $this->tim_tas_name[] = ($row[12]);
 			
-			$this->tim_mem_name[] = ($row[12]);
-            $this->tim_pro_name[] = ($row[13]);
-            $this->tim_pro_type[] = ($row[14]);
-            $this->tim_org_name[] = ($row[15]);
-            $this->tim_svc_name[] = ($row[16]);
-            $this->tim_tas_name[] = ($row[17]);
+			$this->tim_mem_name[] = ($row[13]);
+            $this->tim_pro_name[] = ($row[14]);
+            $this->tim_pro_type[] = ($row[15]);
+            $this->tim_org_name[] = ($row[16]);
+            $this->tim_svc_name[] = ($row[17]);
+            $this->tim_tas_name[] = ($row[18]);
         } 
 
         $this->close();
