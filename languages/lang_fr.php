@@ -521,7 +521,7 @@ $strings["report"] = "Rapport";
 $strings["license"] = "License";
 // 2.4
 $strings["settings_notwritable"] = "Settings.php file is not writable";
-//BANLIEUES
+//EDO
 $strings["project_id"] = "'Projet'";
 $strings["error_required"] = "est requis.";
 $strings["task_id"] = "'T&acirc;che'";
@@ -536,9 +536,17 @@ $strings["non_working_day"]="Jour non ouvr&eacute;";
 $strings["invalid_date_format"]="Format de date invalide";
 $strings["timesheets_report"]="Timesheets";
 $strings["timesheets_report_desc"]="Récapitulatif des timesheets par personne et par période (par défaut : un mois, tous les travailleurs)";
+$strings["timesheets_employer_report"]="Timesheets par employeur";
+$strings["timesheets_employer_report_desc"]="Récapitulatif des timesheets par personne, par période et par employeur (par défaut : un mois, tous les travailleurs)";
 $strings["absence_report"]="Absences";
 $strings["absence_report_desc"]="Rapport des diverses absences : congés, maladies...";
 $strings["absence_report_title"]="Relevé des absences";
+$strings["employers_report"]="Employeurs";
+$strings["employers_report_desc"]="Rapport d'occupation pour employeurs";
+$strings["employers_report_title"]="Rapport d'occupation";
+$strings["employer_report_hours"]="Heures par employeur";
+$strings["employer_report_hours_desc"]="Rapport d'occupation par employeur";
+$strings["employer_report_hours_title"]="Rapport d'occupation détaillé par employeur";
 $strings["taken"]="Pris";
 $strings["remaining"]="Solde";
 $strings["default"]="Standard";

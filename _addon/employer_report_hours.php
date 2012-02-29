@@ -16,15 +16,17 @@ require_once("../includes/library.php");
 include_once "addon_functions.inc.php";
 require_once("addon_variables.inc.php");
 
+$pageTitle=$strings["employer_report_hours_title"];
 
-$pageTitle="Relevé des Timesheets";
+//echo $employer;
 
 $displayStyle=TASKTIME_MONTH_SUMMARY;
 if($worker_id=="") {
 	if($_SESSION['selecter_worker']!="") {
 		$worker_id=$_SESSION['selecter_worker'];
 	} else {
-		$worker_id=ALL_WORKERS;
+		//$worker_id=ALL_WORKERS;
+		$worker_id=$_SESSION['idSession'];
 	}
 } else if($worker_id==ALL_WORKERS) {
 	$_SESSION['selecter_worker']="";
@@ -41,20 +43,18 @@ $breadcrumbs[]=$pageTitle;
 $pageSection = 'reports';
 require_once("../themes/" . THEME . "/header.php");
 
-//Define employer filter and navigation if necessary
-if($employer!="") {
-    $employer_filter="&employer=".$employer;
-}
-
-
 //*** Time Navigation ***
-echo "<form action='timesheets_report.php?dateCalend=".$dateCalend."' method='post'>".
+if($employer!="") $employer_addon="employer=$employer"; 
+else $employer_addon="";
+
+
+echo "<form action='?dateCalend=".$dateCalend."' method='post'>".
 		"<span width='70%' style='margin-left:20px'><strong>".
-	buildLink("../_addon/timesheets_report.php?dateCalend={$datePast}{$employer_filter}", $strings["previous"], LINK_INSIDE).
+	buildLink("?dateCalend=$datePast&$employer_addon", $strings["previous"], LINK_INSIDE).
 	" | " .
-	buildLink("../_addon/timesheets_report.php?dummy=0{$employer_filter}", $strings["today"], LINK_INSIDE) .
+	buildLink($_SERVER['PHP_SELF']."?$employer_addon", $strings["today"], LINK_INSIDE) . 
 	" | " .
-	buildLink("../_addon/timesheets_report.php?dateCalend={$dateNext}{$employer_filter}", $strings["next"], LINK_INSIDE) .
+	buildLink("?dateCalend=$dateNext&$employer_addon", $strings["next"], LINK_INSIDE) .
 	"</strong></span>";
 
 //*** Add User Selection for Administrator ***
@@ -83,36 +83,20 @@ if (loggedUserIsAdmin()) {
 		//"&nbsp;&nbsp;&nbsp;" .
 		//buildLink("../_addon/timesheets_report.php?dateCalend=$dateCalend&worker_id=".ALL_WORKERS, $strings["all_workers"], LINK_INSIDE);
 }
-
-
-//Define employer filter and navigation if necessary
-if($employer!="") {
-
-    //Add an employer menu, based on arbitrary list of recurring employers (defined in addon_variables)
-    echo "&nbsp;&nbsp;<select name='employer' onChange=\"this.form.submit();\">";
-    echo "<option value='all'>-- " . $strings['select_all'] . " --</option>";
-    foreach ($frequent_employers as $key=>$value) {
-        $selected="";
-        if(($employer==$key)) {
-                $selected=" selected";
-        }
-        echo "<option value='" . $key . "'".$selected.">" . $value . "$clientUser</option>";
-    }
-    echo "</select>";
-}
-
 echo "</form>";
 
 //---- content ----
 $block1 = new block();
 $block1->form = "xwbT";
-$block1->openForm("../reports/timesheets_report.php#" . $block1->form . "Anchor");
+$block1->openForm("#" . $block1->form . "Anchor");
 //$block1->headingForm("$pageTitle");
 $block1->openContent();
 
 
 
-echo "<div id='timesheet_summary' style='width:99%;height:680px;padding:0px;'><iframe frameborder='0' src='$applicationFolder/_addon/addon_hours_summary.php?dateCalend=$dateCalend&worker_id=$worker_id&display=".TASKTIME_MONTH_SUMMARY.$employer_filter."' type='text/html' width='100%' height='100%'></iframe></div>";
+echo "<div id='timesheet_summary' style='width:99%;height:680px;padding:0px;'>
+		<iframe frameborder='0' src='$applicationFolder/_addon/addon_hours_summary.php?dateCalend=$dateCalend&employer=$employer&worker_id=$worker_id&display=".TASKTIME_EMPLOYER_DETAIL."' type='text/html' width='100%' height='100%'></iframe>
+	</div>";
 
 // close block1
 $block1->closeFormResults();

@@ -12,7 +12,16 @@ include_once("addon_date_calculation.php");
 //$worker_id (if = all > All workers, if no value > session ID used)
 
 //*** Find data
-$query .= "WHERE (tim.date >= '$firstDayDate' AND tim.date <= '$lastDayDate')";
+
+//From begin of project to selected end date
+if(($displayStyle==TASKTIME_EMPLOYER)) {
+	$query .= "WHERE (tim.date <= '$lastDayDate')";
+}
+//Limit to selected dated for all other cases
+else {
+	$query .= "WHERE (tim.date >= '$firstDayDate' AND tim.date <= '$lastDayDate')";
+}
+//echo $query;
 	
 //*** a member selection was made
 //$query .= " AND tim.owner = 4";
@@ -24,32 +33,63 @@ if($worker_id!="" && $worker_id!=ALL_WORKERS) {
 }
 //echo "$worker_id / $team_id / {$_SESSION['selecter_worker']} / {$_SESSION['idSession']}";
 
+//Employer filter, if set
+
+if($employer!="") {
+    if($employer!="all") {
+        $query .= " AND org.id IN (".$employer.")";
+    }
+}
+//echo $employer;
+
 //*** Select according to user (when specified or user has no right to see other timesheets)
 if($worker_id!=ALL_WORKERS || !loggedUserIsAdmin()){
 	$query .= " AND tim.owner = $team_id";
-	//	echo $_SESSION['idSession']."<br/>";
+	//echo $_SESSION['idSession']."<br/>";
 }
 
 //*** Filter on Task ID if in Absence Report
 if(($displayStyle==TASKTIME_ABSENCE_YEAR) OR ($displayStyle==TASKTIME_ABSENCE_MONTH)) {
-	if(($offType=="")||($offType==ALL_OFF_TYPES)) {
-		$query .= " AND tim.task IN (".implode(",",$aOffDayTypes).")";
-	} else {
-		$query .= " AND tim.task = $offType";
-	}
+    if(($offType=="")||($offType==ALL_OFF_TYPES)) {
+            $query .= " AND tim.task IN (".implode(",",$aOffDayTypes).")";
+    } else {
+            $query .= " AND tim.task = $offType";
+    }
 }
+//echo $query;
+
+//For Employers Timesheets listing
+//elseif($displayStyle==TASKTIME_EMPLOYER) {
+	
+	//Fetch Task IDs from correspondance table
+	//$query .= " AND tim.project IN (".implode(",",$aEmployedProjectIDs).")";
+	
+	//Select min begin date and max end date for tasks from the necessary employers
+	
+	//Sum the planned task times for each employer
+	
+	//Calculate the period of planned word
+	
+	//Ventilate work time on total period
+//}
 
 //*** Order by worker if necessary
 $worker_order_addon="";
+$project_group_addon="";
+$org_group_addon="org.name, ";
 if($worker_id==ALL_WORKERS) {
-	$worker_order_addon="tim.owner ASC,";
+	$worker_order_addon="tim.owner ASC, ";
 }
-$tmpquery = "$query ORDER BY ${worker_order_addon}tim.date ASC,org.name,pro.name";
-// echo $tmpquery."<br/>";
 
 $listHours = new request();
-$listHours->openTaskTime($tmpquery);
-$comptListHours = count($listHours->tim_id);
+//*** Group by Projet if in Employer summary, else do normal Query
+if(($displayStyle!=TASKTIME_EMPLOYER) || ($displayStyle==TASKTIME_EMPLOYER_DETAIL)) {
+	$tmpquery = "$query ORDER BY {$worker_order_addon}{$project_group_addon}tim.date ASC,{$org_group_addon}pro.name";
+	$listHours->openTaskTime($tmpquery);
+	$comptListHours = count($listHours->tim_id);
+}
+//echo $tmpquery."<br/>";
+
 //echo $comptListHours;
 
 //*** Page Header
@@ -101,12 +141,191 @@ $presentWorker="";
 $dayTotal=0;
 $weekTotal=0;
 $monthTotal=0;
+$employerTotal=0;
+//$employer="";
+$dateEmployerBegin="";
+$dateEmployerEnd="";
 $displayDate="";
 $delta=0;
 $totalDelta=0;
 
 //*** New functioning - browse through open days and compare to DB records ***
-if(!(($displayStyle==TASKTIME_ABSENCE_MONTH) || ($displayStyle==TASKTIME_ABSENCE_YEAR))) {
+//Special case for Employer listing
+if(($displayStyle==TASKTIME_EMPLOYER)) {
+	
+	//echo "TASKTIME_EMPLOYER";
+
+	//$project_group_addon="org.name ASC, ";
+	//$org_group_addon="tim.project ASC, ";
+	$projectsList="";
+	foreach($aEmployedProjectIDs as $work_package) {
+		$wpProjectID=(is_array($work_package[PROJECT_ID]))?implode(",",$work_package[PROJECT_ID]):$work_package[PROJECT_ID];
+		$projectsList=$wpProjectID;
+	
+		$tmpquery="SELECT O.name, P.name, SUM(TT.hours) AS work
+			FROM {$tableCollab["tasks_time"]} TT
+			INNER JOIN {$tableCollab["projects"]} P ON TT.project = P.id
+			INNER JOIN {$tableCollab["organizations"]} O ON P.organization = O.id
+			WHERE TT.project IN ($projectsList)
+			GROUP BY P.name";
+		//echo $tmpquery;
+		$listHours->connectClass();
+		$listHours->query($tmpquery);
+		$totalHours=0;
+		$theor_weekly_hours=$work_package[PROJECT_WEEKLY_HOURS];
+		//$project_begin=new DateTime($work_package[PROJECT_BEGIN]);
+		$project_begin=$work_package[PROJECT_BEGIN];
+		//echo $work_package[PROJECT_BEGIN];
+		//$project_now=new DateTime();
+		$project_now="NOW";
+		
+		//$project_duration_interval=date_diff($project_begin,$project_now);
+		//$project_duration=($project_duration_interval->format("%d"));
+		$project_duration_interval=date_diff_outdated($project_begin,$project_now,"w");
+		//echo $project_duration;
+		//echo $project_duration_interval;
+		
+		while ($row=$listHours->fetch()) {
+			
+			$block2->openRow($db_date_index);
+			$block2->cellRow("");
+			$block2->cellRow("{$row[0]} > {$row[1]}");
+			$block2->cellRow("{$row[2]}");
+			$block2->closeRow();
+			
+			$totalHours+=intval($row[2]);
+		}
+		
+		$pract_weekly_hours=round($totalHours/$project_duration_interval,2);
+		$theor_total_hours=round($theor_weekly_hours*$project_duration_interval,2);
+		$block2->openRow($db_date_index);
+		$block2->cellRow("");
+		$block2->cellRow("Total");
+		$block2->cellRow("{$totalHours} (theor: $theor_total_hours) > $pract_weekly_hours hours weekly (theor: {$theor_weekly_hours})");
+		$block2->closeRow();
+	}
+	$projectsList=rtrim($projectsList,",");
+	
+
+	$comptListHours=0;
+	
+}
+elseif($displayStyle==TASKTIME_EMPLOYER_DETAIL) {
+
+	//echo "TASKTIME_EMPLOYER";
+
+	//$project_group_addon="org.name ASC, ";
+	//$org_group_addon="tim.project ASC, ";
+	$tasksList="";
+        $tasks_hours_total=0;
+
+        //Select Employer Tasks
+//        print_r($aEmployerTasks);
+//        echo $employer;
+        if(isset($aEmployerTasks[$employer])) {
+            if(is_array($aEmployerTasks[$employer])) {
+                foreach($aEmployerTasks[$employer] as $key => $employer_task) {
+                    $tasksList.=$key.",";
+                    $tasks_hours_total+=round($employer_task[TASK_MONTHLY_HOURS]);
+                }
+                $tasksList=rtrim($tasksList,",");
+
+                $tmpquery="SELECT O.name, P.name, SUM(TT.hours) AS work, T.id, T.name
+			FROM {$tableCollab["tasks_time"]} TT
+                        INNER JOIN {$tableCollab["tasks"]} T ON TT.task = T.id
+			INNER JOIN {$tableCollab["projects"]} P ON TT.project = P.id
+			INNER JOIN {$tableCollab["organizations"]} O ON P.organization = O.id
+			WHERE TT.task IN ($tasksList)
+                        AND (TT.date <= '$lastDayDate' AND TT.date >= '$firstDayDate')
+                        GROUP BY T.name
+                        ORDER BY P.name, T.name
+                        ";
+
+//                echo $tmpquery;
+                
+		$listHours->connectClass();
+		$listHours->query($tmpquery);
+		$totalHours=0;
+                $totalHours2=0;
+		$project_now="NOW";
+
+		while ($row=$listHours->fetch()) {
+
+
+                    //Find theoretical hours
+                    if(isset($aEmployerTasks[$employer][$row[3]])) {
+                        $local_max=$aEmployerTasks[$employer][$row[3]][TASK_MONTHLY_HOURS];
+                        $local_diff=red_negative($local_max-$row[2]);
+                    } else {
+                        $local_max="n/a";
+                        $local_diff="0";
+                    }
+
+
+                    $block2->openRow($db_date_index);
+			$block2->cellRow("&nbsp;<a href='../tasks/viewtask.php?id={$row[3]}' target='_top'>#{$row[3]}</a>&nbsp;");
+			$block2->cellRow("{$row[0]} > {$row[1]} > {$row[4]}");
+			$block2->cellRow("{$row[2]} (max&nbsp;: {$local_max}, diff&nbsp;: {$local_diff})");
+			$block2->closeRow();
+
+			$totalHours+=round($row[2],2);
+		}
+		$block2->openRow($db_date_index);
+		$block2->cellRow("");
+		$block2->cellRow("<h3>Total</h3>");
+                $block2->cellRow("<strong>{$totalHours} (theor: $tasks_hours_total)</strong>");
+		$block2->closeRow();
+
+                //Do the same for non planned hours
+                $tmpquery="SELECT O.name, P.name, SUM(TT.hours) AS work, T.id, T.name
+			FROM {$tableCollab["tasks_time"]} TT
+                        INNER JOIN {$tableCollab["tasks"]} T ON TT.task = T.id
+			INNER JOIN {$tableCollab["projects"]} P ON TT.project = P.id
+			INNER JOIN {$tableCollab["organizations"]} O ON P.organization = O.id
+			WHERE TT.task NOT IN ($tasksList)
+                        AND O.id = $employer
+                        AND (TT.date <= '$lastDayDate' AND TT.date >= '$firstDayDate')
+			GROUP BY T.name
+                        ORDER BY P.name, T.name
+                        ";
+               $listHours->query($tmpquery);
+               while ($row=$listHours->fetch()) {
+
+			$block2->openRow($db_date_index);
+			$block2->cellRow("&nbsp;<a href='../tasks/viewtask.php?id={$row[3]}' target='_top'>#{$row[3]}</a>&nbsp;");
+			$block2->cellRow("{$row[0]} > {$row[1]} > {$row[4]}");
+			$block2->cellRow("{$row[2]}");
+			$block2->closeRow();
+
+			$totalHours2+=round($row[2],2);
+		}
+
+		$theor_total_hours=round($theor_weekly_hours*$project_duration_interval,2);
+		$block2->openRow($db_date_index);
+		$block2->cellRow("");
+		$block2->cellRow("<h3>Total</h3>");
+                $block2->cellRow("<strong>{$totalHours2}</strong>");
+		$block2->closeRow();
+
+                $general_total=$totalHours+$totalHours2;
+                $general_diff=$tasks_hours_total-$general_total;
+                $general_diff=red_negative($general_diff);
+                $block2->openRow($db_date_index);
+                $block2->cellRow("");
+		$block2->cellRow("<h2>Total général</h2>");
+                $block2->cellRow("<strong>".($general_total)." (diff.&nbsp;: ".$general_diff.")</strong>");
+		$block2->closeRow();
+
+            } else {
+                echo "Employer data missing (not an array)";
+            }
+        } else {
+            echo "Employer data missing (not set)";
+        }
+
+
+}
+elseif(!(($displayStyle==TASKTIME_ABSENCE_MONTH) || ($displayStyle==TASKTIME_ABSENCE_YEAR))) {
 	$db_date_index=0;
 	
 	//Define begin and end date according to display type
@@ -126,9 +345,18 @@ if(!(($displayStyle==TASKTIME_ABSENCE_MONTH) || ($displayStyle==TASKTIME_ABSENCE
 	if($comptListHours>0) $worker_id_local=$listHours->tim_owner[$db_date_index];
 	else $worker_id_local="";
 	
+	//Specifiv begin and end interval dates for Employers topo
+	if($displayStyle==TASKTIME_EMPLOYER) {
+		$interval_begin=0;
+		$interval_end=$comptListHours;
+	}
+	
+	//Display and calculation based on days, for most cases
 	for($reference_day=$interval_begin;$reference_day<=$interval_end;$reference_day++) {
 		//Variables
-		if($displayStyle==TASKTIME_WEEK) {
+		if($displayStyle==TASKTIME_EMPLOYER) {
+			$reference_date=$listHours->tim_date[$db_date_index];
+		} elseif($displayStyle==TASKTIME_WEEK) {
 			$reference_date=_moveDate($firstDayDate,$reference_day,1);
 		} else {
 			$reference_date="$year-"._dayDateTrim($month)."-"._dayDateTrim($reference_day);
@@ -136,6 +364,21 @@ if(!(($displayStyle==TASKTIME_ABSENCE_MONTH) || ($displayStyle==TASKTIME_ABSENCE
 		$date=$listHours->tim_date[$db_date_index];
 		$worker=$listHours->tim_mem_name[$db_date_index];
 		$date_display="<strong><em>$reference_date</em></strong>";
+		
+		//Display employer if needed
+		/*
+		if($employer!=$listHours->tim_org_name[$db_date_index]) {
+			$employer=$listHours->tim_org_name[$db_date_index];
+			
+			$block2->openRow($db_date_index);
+			$block2->cellRow("");
+			$block2->cellRow("<div class='worker_name'>$employer</div>");
+			$block2->cellRow("");
+			$block2->closeRow();
+			
+			$dateEmployerBegin=$date;
+		}
+		*/
 		
 		//Exit if no Worker
 // 		echo "worker: $worker";
@@ -162,18 +405,20 @@ if(!(($displayStyle==TASKTIME_ABSENCE_MONTH) || ($displayStyle==TASKTIME_ABSENCE
 	// 		echo $listHours->tim_date[$db_date_index]." % $reference_date = ".($listHours->tim_date[$db_date_index]==$reference_date)."<br>";	
 			
 			//***** Working Date Display ******
-			$cell_content=$date_display;
-			if(isWorkingDay($reference_date)) {
-				$cell_content.="&nbsp;&nbsp;";
-			} else {
-				$cell_content.=" ({$strings['non_working_day']})&nbsp;&nbsp;";
+			if($displayStyle!=TASKTIME_EMPLOYER) {
+				$cell_content=$date_display;
+				if(isWorkingDay($reference_date)) {
+					$cell_content.="&nbsp;&nbsp;";
+				} else {
+					$cell_content.=" ({$strings['non_working_day']})&nbsp;&nbsp;";
+				}
+				$cell_content.=popupLink("../_addon/encode_timesheet.php?dateURL=$reference_date&worker_id=$team_id", "<img align='top' border='0' src='$applicationFolder/themes/deepblue/btn_add_small_norm.gif'>");
+				$block2->openRow($db_date_index);
+				$block2->cellRow("");
+				$block2->cellRow($cell_content);
+				$block2->cellRow("<div id='{$reference_date}_{$worker_id_local}_total' class='week_summary'></div>");
+				$block2->closeRow();
 			}
-			$cell_content.=popupLink("../_addon/encode_timesheet.php?dateURL=$reference_date&worker_id=$team_id", "<img align='top' border='0' src='$applicationFolder/themes/deepblue/btn_add_small_norm.gif'>");
-			$block2->openRow($db_date_index);
-			$block2->cellRow("");
-			$block2->cellRow($cell_content);
-			$block2->cellRow("<div id='{$reference_date}_{$worker_id_local}_total' class='week_summary'></div>");
-			$block2->closeRow();
 			
 			//***** Fetch TaskTime Data for present Date for the same worker *****
 // 			echo "$db_date_index - $comptListHours - {$listHours->tim_date[$db_date_index]} - $reference_day - {$listHours->tim_mem_name[$db_date_index]}<br/>";
@@ -182,26 +427,29 @@ if(!(($displayStyle==TASKTIME_ABSENCE_MONTH) || ($displayStyle==TASKTIME_ABSENCE
 				$dayTotal+=$listHours->tim_hours[$db_date_index];
 				$weekTotal+=$listHours->tim_hours[$db_date_index];
 				$monthTotal+=$listHours->tim_hours[$db_date_index];
+				$employerTotal+=$listHours->tim_hours[$db_date_index];
 				
 				//Display Project Name, Task name and Time Details for Worker Specific report
-				if(($worker_id!=ALL_WORKERS)) {
-		//		if(true) {
-					$block2->openRow($reference_day.$db_date_index);
-					$block2->cellRow("");
-		//		   	$block2->cellRow($listHours->tim_owner[$db_date_index]);
-					$block2->cellRow($listHours->tim_pro_name[$db_date_index]."<br/>".$listHours->tim_tas_name[$db_date_index]);
-					//Edit Button
-					$editButton="&nbsp;".popupLink("../tasks/edittasktime.php?task=".$listHours->tim_task[$db_date_index]."&id=".$listHours->tim_id[$db_date_index]."", "<img align='top' border='0' src='$applicationFolder/themes/deepblue/btn_edit_small_norm.gif'>");
-					//Copy Button
-					$copyButton="&nbsp;".popupLink("../tasks/addtasktime.php?task=".$listHours->tim_task[$db_date_index]."&ttid=".$listHours->tim_id[$db_date_index]."&worker_id=".$listHours->tim_owner[$db_date_index], "<img align='top' border='0' src='$applicationFolder/themes/deepblue/btn_copy_small_norm.gif' alt='Copy'>");
-					//Add a - link for deletion if admin
-				//   	$deleteButton="";
-				//   	if (loggedUserIsAdmin()) {
-						$deleteButton="&nbsp;".deletePopupLink("../tasks/deletetasktime.php?task=".$listHours->tim_task[$db_date_index]."&id=".$listHours->tim_id[$db_date_index]."&action=delete", "<img align='top' border='0' src='$applicationFolder/themes/deepblue/btn_remove_small_norm.gif'>","");
-				//   	}
-					//Display
-					$block2->cellRow($listHours->tim_hours[$db_date_index].$editButton.$copyButton.$deleteButton);
-				$block2->closeRow();
+				if($displayStyle!=TASKTIME_EMPLOYER) {
+					if(($worker_id!=ALL_WORKERS)) {
+			//		if(true) {
+						$block2->openRow($reference_day.$db_date_index);
+						$block2->cellRow("");
+			//		   	$block2->cellRow($listHours->tim_owner[$db_date_index]);
+						$block2->cellRow($listHours->tim_pro_name[$db_date_index]."<br/>".$listHours->tim_tas_name[$db_date_index]);
+						//Edit Button
+						$editButton="&nbsp;".popupLink("../tasks/edittasktime.php?task=".$listHours->tim_task[$db_date_index]."&id=".$listHours->tim_id[$db_date_index]."", "<img align='top' border='0' src='$applicationFolder/themes/deepblue/btn_edit_small_norm.gif'>");
+						//Copy Button
+						$copyButton="&nbsp;".popupLink("../tasks/addtasktime.php?task=".$listHours->tim_task[$db_date_index]."&ttid=".$listHours->tim_id[$db_date_index]."&worker_id=".$listHours->tim_owner[$db_date_index], "<img align='top' border='0' src='$applicationFolder/themes/deepblue/btn_copy_small_norm.gif' alt='Copy'>");
+						//Add a - link for deletion if admin
+					//   	$deleteButton="";
+					//   	if (loggedUserIsAdmin()) {
+							$deleteButton="&nbsp;".deletePopupLink("../tasks/deletetasktime.php?task=".$listHours->tim_task[$db_date_index]."&id=".$listHours->tim_id[$db_date_index]."&action=delete", "<img align='top' border='0' src='$applicationFolder/themes/deepblue/btn_remove_small_norm.gif'>","");
+					//   	}
+						//Display
+						$block2->cellRow($listHours->tim_hours[$db_date_index].$editButton.$copyButton.$deleteButton);
+					$block2->closeRow();
+					}
 				}
 				
 				//Increment
@@ -232,16 +480,46 @@ if(!(($displayStyle==TASKTIME_ABSENCE_MONTH) || ($displayStyle==TASKTIME_ABSENCE
 			//echo "Total : $weekTotal $deltaText<br/><br/>";
 			
 			//*** Affichage du total quotidien ***
-			if($displayStyle==TASKTIME_MONTH_SUMMARY) {
-				changeDivValue("{$reference_date}_{$worker_id_local}_total","$dayTotal $deltaText");
-			} else {
-				$block2->openRow($reference_day.$db_date_index);
-				$block2->cellRow("");
-				$block2->cellRow("<div align='right'><strong>Total&nbsp;&nbsp;&nbsp;&nbsp;</strong></div>");
-				$block2->cellRow("$dayTotal $deltaText");
-				$block2->closeRow();
+			if($displayStyle!=TASKTIME_EMPLOYER) {
+				if($displayStyle==TASKTIME_MONTH_SUMMARY) {
+					changeDivValue("{$reference_date}_{$worker_id_local}_total","$dayTotal $deltaText");
+				} else {
+					$block2->openRow($reference_day.$db_date_index);
+					$block2->cellRow("");
+					$block2->cellRow("<div align='right'><strong>Total&nbsp;&nbsp;&nbsp;&nbsp;</strong></div>");
+					$block2->cellRow("$dayTotal $deltaText");
+					$block2->closeRow();
+				}
 			}
 			$dayTotal=0;
+			
+			//** End of an Employer loop **
+			if($displayStyle==TASKTIME_EMPLOYER)  {
+				if($listHours->tim_org_name[$db_date_index+1]!=$listHours->tim_org_name[$db_date_index]) {
+					$block2->openRow($reference_day.$db_date_index);
+					$block2->cellRow("");
+					$block2->cellRow("<div align='right'><strong>Total&nbsp;&nbsp;&nbsp;&nbsp;</strong></div>");
+					$block2->cellRow("$employerTotal");
+					$block2->closeRow();
+					
+					$dateEmployerEnd=$listHours->tim_date[$db_date_index];
+					
+					$diff_days=date_diff($dateEmployerBegin,$dateEmployerEnd,"d");
+					$diff_weeks=round($diff_days/7,2);
+					
+					$work_per_week=round(($employerTotal/$diff_weeks),2);
+					
+					$block2->openRow($reference_day.$db_date_index);
+					$block2->cellRow("");
+					$block2->cellRow("<div align='right'><strong>Period&nbsp;&nbsp;&nbsp;&nbsp;</strong></div>");
+					$block2->cellRow($dateEmployerBegin." ".$dateEmployerEnd." : $diff_days => $work_per_week hours per week");
+					$block2->closeRow();
+					//echo "suivant: ".$listHours->tim_org_name[$db_date_index+1];
+					$employerTotal=0;
+					
+					
+				}
+			}
 			
 			//** End of the Interval Loop **
 			if(($reference_day==$interval_end)) {
@@ -312,6 +590,7 @@ if(!(($displayStyle==TASKTIME_ABSENCE_MONTH) || ($displayStyle==TASKTIME_ABSENCE
 		//if(($db_date_index<$comptListHours)&&($worker!=$listHours->tim_mem_name[$db_date_index+1])&&($listHours->tim_mem_name[$db_date_index+1])) $reference_day=$interval_begin-1;
 
 	}
+	
 } else if(($displayStyle==TASKTIME_ABSENCE_MONTH) || ($displayStyle==TASKTIME_ABSENCE_YEAR)) {
 
 	//Get theoretical amount of days off for each worker

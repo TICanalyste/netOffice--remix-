@@ -97,6 +97,15 @@ function toggleTimer(task) {
 }
 
 function toggleTimerPHP(task,value,textMessage) {
+	//Before querying the actual toggle, restart netOffice session, to avoid problems 
+//	jQuery.get("../general/home.php",{ id: task , status: value, comment: textMessage},
+//			function(data){
+//			    //alert(data);
+//				
+//				} else {
+//					toggleTimerText(task,"");
+//				}
+//			},"text");
 	jQuery.post("../_addon/toggle_timer.php",{ id: task , status: value, comment: textMessage},
 			function(data){
 			    //alert(data);
@@ -112,6 +121,8 @@ function toggleTimerText(task,datetime) {
 	var timer_text_id = "timer_"+task+"_text";
 	var timer_text = document.getElementById(timer_text_id);
 	timer_text.innerHTML=datetime;
+	
+	
 }
 
 function toggleTimerIcon(task,value) {
@@ -132,11 +143,15 @@ function toggleTimerIcon(task,value) {
 		timer_icon.parentNode.parentNode.parentNode.style.backgroundColor = "#FF5555";
 		timer_icon.parentNode.parentNode.parentNode.setAttribute("onmouseout", "this.style.backgroundColor='#FF5555';");
 		//timer_row_background = "#FF0000";
+		//Prevent closing, now that a timer is running
+		setDirtyFlag();
 	} else {
 		timer_icon.src=timer_icon_off;
 		document.runningTaskTimer=0;
 		timer_icon.parentNode.parentNode.parentNode.style.backgroundColor = timer_row_background;
 		timer_icon.parentNode.parentNode.parentNode.setAttribute("onmouseout", "this.style.backgroundColor='#"+timer_row_background+"';");
+		//Re-allow closing
+		releaseDirtyFlag();
 	}
 }
 
@@ -146,5 +161,27 @@ function toggleTimerBegin(task,datetime) {
 	 * TODO Affichage de l'heure de début de tâche lors de l'allumage
 	 */
 }
+
+//Prevent closing the window when still working
+var needToConfirm = false;
+
+function setDirtyFlag()
+	{
+	//needToConfirm = true; //Call this function if some changes is made to the web page and requires an alert
+	// Of-course you could call this is Keypress event of a text box or so...
+	}
+
+function releaseDirtyFlag()
+	{
+	needToConfirm = false; //Call this function if dosent requires an alert.
+	//this could be called when save button is clicked
+	}
+
+window.onbeforeunload = confirmExit;
+function confirmExit()
+	{
+	if (needToConfirm)
+	return 'You have attempted to leave this page. If you have made any changes to the fields without clicking the Save button, your changes will be lost. Are you sure you want to exit this page?';
+	}
 
 //-->

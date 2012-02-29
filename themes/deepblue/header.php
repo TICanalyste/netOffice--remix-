@@ -120,16 +120,21 @@ $headBonus
 		if($pageSection=="encode") {
 			$blockHeader->itemNavigationCurrent("/_addon/encode.php", "Encodage");
 		} else {
-			$blockHeader->itemNavigation("/_addon/encode.php", "Encodage");
+			$blockHeader->itemNavigation("../_addon/encode.php", "Encodage");
 		}
 	}
 	if ($_SESSION['nameSession'] == $admin_name) {
 		if($pageSection=="validate") {
 			$blockHeader->itemNavigationCurrent("/_addon/validate.php", "Validation");
 		} else {
-			$blockHeader->itemNavigation("/_addon/validate.php", "Validation");
+			$blockHeader->itemNavigation("../_addon/validate.php", "Validation");
 		}
 	}
+        
+        //Additional links for Specific Vertige mess
+        $blockHeader->itemNavigation("../_addon/employer_report_hours.php?employer=50&hours=60", "&nbsp| Rapport Vertige");
+        $blockHeader->itemNavigation("../_addon/employers_report.php", "Rapport Employeurs");
+        
 	echo("</nobr></td>");
 
     echo("</tr></table>");

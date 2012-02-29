@@ -56,6 +56,81 @@ function netOfficeDateFromDate($inputDate) {
 	return($outputDate);
 }
 
+//From PHP.Net http://be2.php.net/manual/en/function.date-diff.php#96808 > eugene at ultimatecms dot co dot za
+//Modified by EDO on 100412
+function date_diff_outdated($start, $end="NOW", $returnType="")
+{
+        $sdate = strtotime($start);
+        $edate = strtotime($end);
+		
+		$timeshift="";
+		
+		if($returnType=="d") {
+			// Days + Hours + Minutes
+            $pday = ($edate - $sdate) / 86400;
+            //$preday = explode('.',$pday);
+			$timeshift=round($pday,2);
+		} elseif($returnType=="w") {
+			// Days + Hours + Minutes
+            $pday = ($edate - $sdate) / 86400;
+			$pweek = $pday/7;
+            //$preday = explode('.',$pday);
+			$timeshift=round($pweek,2);
+		}
+		else {
+			
+		
+		
+			$time = $edate - $sdate;
+			if($time>=0 && $time<=59) {
+	
+				// Seconds
+				$timeshift = $time.' seconds ';
+	
+			} elseif($time>=60 && $time<=3599) {
+					// Minutes + Seconds
+					$pmin = ($edate - $sdate) / 60;
+					$premin = explode('.', $pmin);
+				   
+					$presec = $pmin-$premin[0];
+					$sec = $presec*60;
+				   
+					$timeshift = $premin[0].' min '.round($sec,0).' sec ';
+	
+			} elseif($time>=3600 && $time<=86399) {
+					// Hours + Minutes
+					$phour = ($edate - $sdate) / 3600;
+					$prehour = explode('.',$phour);
+				   
+					$premin = $phour-$prehour[0];
+					$min = explode('.',$premin*60);
+				   
+					$presec = '0.'.$min[1];
+					$sec = $presec*60;
+	
+					$timeshift = $prehour[0].' hrs '.$min[0].' min '.round($sec,0).' sec ';
+	
+			} elseif($time>=86400) {
+					// Days + Hours + Minutes
+					$pday = ($edate - $sdate) / 86400;
+					$preday = explode('.',$pday);
+	
+					$phour = $pday-$preday[0];
+					$prehour = explode('.',$phour*24);
+	
+					$premin = ($phour*24)-$prehour[0];
+					$min = explode('.',$premin*60);
+				   
+					$presec = '0.'.$min[1];
+					$sec = $presec*60;
+				   
+					$timeshift = $preday[0].' days '.$prehour[0].' hrs '.$min[0].' min '.round($sec,0).' sec ';
+	
+			}
+		}
+        return $timeshift;
+}
+
 //************ Security Functions ************************
 function loggedUserIsAdmin() {
 //	global $admin_name;
@@ -134,6 +209,17 @@ function popupLink_generic($url,$text,$popupcode) {
 function popupClose() {
 	$html="<script language='javascript'>this.opener.location.reload();this.opener.focus();this.close();</script>";
 	echo ($html);
+}
+
+function red_negative($value,$treshold=2) {
+    $ret=$value;
+    if($ret<0) {
+        $ret="<span style='color:red;'>".$ret."</span>";
+    }
+    elseif($ret<$treshold) {
+        $ret="<span style='color:orange;'>".$ret."</span>";
+    }
+    return($ret);
 }
 
 //****************** HTML Content Manipulation ***************

@@ -18,6 +18,9 @@
  *    PMA_USR_BROWSER_VER      (double) - the version of this browser
  */
 // phpMyAdmin release
+
+error_reporting(E_ERROR);
+
 if (!defined('PMA_VERSION')) {
     define('PMA_VERSION', '2.2.3');
 }

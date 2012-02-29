@@ -1,0 +1,37 @@
+
+
+Global setup:
+
+ Set up git
+  git config --global user.name "Emmanuel Donnet"
+  git config --global user.email emmanuel@TICanalyste.be
+      
+
+Next steps:
+
+  mkdir netOffice--remix-
+  cd netOffice--remix-
+  git init
+  touch README
+  git add README
+  git commit -m 'first commit'
+  git remote add origin git@github.com:TICanalyste/netOffice--remix-.git
+  git push -u origin master
+      
+
+Existing Git Repo?
+
+  cd existing_git_repo
+  git remote add origin git@github.com:TICanalyste/netOffice--remix-.git
+  git push -u origin master
+      
+
+Importing a Subversion Repo?
+
+  Click here
+      
+
+When you're done:
+
+  Continue
+

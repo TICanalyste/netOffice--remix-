@@ -240,7 +240,7 @@ if($window!="popup") {
 	$block2->borne = $blockPage->returnBorne("1");
 	$block2->rowsLimit = "20";
 
-	$block2->sorting('tasks_time', $sortingUser->sor_tasks_time[0], 'tim.date ASC', $sortingFields = array(0 => 'mem.name', 1 => 'tim.date', 2 => 'tim.hours', 3 => 'tim.created', 4 => 'tim.modified', 5 => 'tim.comments'));
+	$block2->sorting('tasks_time', $sortingUser->sor_tasks_time[0], 'tim.date DESC', $sortingFields = array(0 => 'mem.name', 1 => 'tim.date', 2 => 'tim.hours', 3 => 'tim.created', 4 => 'tim.modified', 5 => 'tim.comments'));
 
 	$tmpquery = "WHERE tim.task = '$id' ORDER BY $block2->sortingValue";
 

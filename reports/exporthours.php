@@ -13,6 +13,9 @@
  */
 // configuration options
 // set up the member selection
+
+error_reporting(E_ERROR);
+
 if ($_GET['S_ATSEL']) {
     if ($_GET['S_ATSEL'] == 'ALL') {
         $S_mem = "ALL";

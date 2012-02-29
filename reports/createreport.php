@@ -212,9 +212,17 @@ else if ($typeReports == 'custom') {
 
     $block1->contentRow(buildLink('../reports/selecthours.php?typeReports=' . $typeReports, $strings['time_report'], LINK_INSIDE), $strings['time_report_desc'], true);
     
+    //*** Added EDO 110325 ***
+    $block1->contentRow(buildLink('../_addon/timesheets_report.php?employer=all', $strings['timesheets_employer_report'], LINK_INSIDE), $strings['timesheets_employer_report_desc'], true);
+
+    //*** Added EDO 111114 ***
+    $block1->contentRow(buildLink('../_addon/employer_report_hours.php?employer=50&hours=60', $strings['employer_report_hours'], LINK_INSIDE), $strings['employer_report_hours_desc'], true);
+
     //*** Added EDO 080711 ***
     $block1->contentRow(buildLink('../_addon/timesheets_report.php', $strings['timesheets_report'], LINK_INSIDE), $strings['timesheets_report_desc'], true);
     $block1->contentRow(buildLink('../_addon/absence_report.php', $strings["absence_report"], LINK_INSIDE), $strings["absence_report_desc"], true);
+    //*** Added EDO 100409 ***
+    $block1->contentRow(buildLink('../_addon/employers_report.php', $strings["employers_report"], LINK_INSIDE), $strings["employers_report_desc"], true);
 
     $block1->contentRow(buildLink('../reports/overdue.php?typeReports=' . $typeReports, $strings['overdue_tasks'], LINK_INSIDE), $strings['overdue_tasks_desc'], true);
 

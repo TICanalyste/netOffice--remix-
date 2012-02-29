@@ -473,14 +473,26 @@ require_once('../themes/' . THEME . '/header.php');
 	        $block2->openRow($listTasks->tas_id[$i]);
 	        $block2->checkboxRow($listTasks->tas_id[$i]);
 
-			//--- id ----
+                //--- id ----
 	        #$block2->cellRow(buildLink("../tasks/viewtask.php?id=" . $listTasks->tas_id[$i], $listTasks->tas_id[$i], LINK_INSIDE));
 
-   			//--- prio ---
+                //--- prio ---
 	        $block2->cellRow('<img src="../themes/' . THEME . '/gfx_priority/' . $idPriority . '.gif" title="' . $priority[$idPriority] . '">' /*. $priority[$idPriority]*/, '', true);
 
-			//--- name ---
-	        $block2->cellRow(buildLink("../tasks/viewtask.php?id=" . $listTasks->tas_id[$i], $listTasks->tas_name[$i], LINK_INSIDE),
+                //--- name ---
+                
+                //Highlight specific Vertige Tasks, to facilitate selection
+//                print_r($aEmployerTasks[$defaultEmployerID]);
+//                echo($listTasks->tas_id[$i]);
+                if(array_key_exists($listTasks->tas_id[$i],$aEmployerTasks[$defaultEmployerID])) {
+                    $highlight_begin='<span class="highlight">';
+                    $highlight_end='</span>';
+                } else {
+                    $highlight_begin='';
+                    $highlight_end='';
+                }
+                
+	        $block2->cellRow(buildLink("../tasks/viewtask.php?id=" . $listTasks->tas_id[$i], $highlight_begin.$listTasks->tas_name[$i].$highlight_end, LINK_INSIDE),
 	        "30");
 
 	        //--- timer ---
@@ -499,7 +511,7 @@ require_once('../themes/' . THEME . '/header.php');
 	        }
 			
 	        
-			//--- status ---
+                //--- status ---
 	        $block2->cellRow('<img src="../themes/' . THEME . '/gfx_status/' . $idStatus . '.gif" alt="' . $status[$idStatus] . '">&nbsp;' . $status[$idStatus], '', true);
 
 			//--- completion ---

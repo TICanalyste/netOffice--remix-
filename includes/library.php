@@ -929,7 +929,7 @@ function createDate($storedDate, $gmtUser)
             $extractMonth = substr($storedDate, 5, 2);
             $extractDay = substr($storedDate, 8, 2);
 
-            return(date("Y-m-d H:i", mktime($extractHour + $gmtUser, $extractMinute, '', $extractMonth, $extractDay, $extractYear)));
+            return(date("Y-m-d H:i", mktime($extractHour + $gmtUser, $extractMinute, 0, $extractMonth, $extractDay, $extractYear)));
         } 
     } else {
         return($storedDate);

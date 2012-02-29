@@ -805,4 +805,34 @@ $strings['reports_from'] = 'from';
 $strings['reports_to'] = 'to';
 $strings['total'] = 'Total';
 
+//EDO
+$strings["project_id"] = "'Project'";
+$strings["error_required"] = "is required.";
+$strings["task_id"] = "'Task'";
+$strings["confirm_deletion"] = "Are you certain you want to deletethis record?";
+$strings["encode_type_change_message"] = "To change encoding type, use upper navigation.";
+$strings["missing_duration"]="Lacking in this week:";
+$strings["monthsum"]="Month recap";
+$strings["monthabs"]="Month's time off recap";
+$strings["yearabs"]="Year's time off recap";
+$strings["all_workers"]="All workers";
+$strings["non_working_day"]="Non-working day";
+$strings["invalid_date_format"]="Invalid date format";
+$strings["timesheets_report"]="Timesheets";
+$strings["timesheets_report_desc"]="Timesheet recap per person per period";
+$strings["timesheets_employer_report"]="Timesheets by employer";
+$strings["timesheets_employer_report_desc"]="Timesheet recap per person per period per employer";
+$strings["absence_report"]="Time off";
+$strings["absence_report_desc"]="Time off report";
+$strings["absence_report_title"]="Time off recap";
+$strings["employers_report"]="Employers";
+$strings["employers_report_desc"]="Occupation report for employers";
+$strings["employers_report_title"]="Occupation report";
+$strings["taken"]="Taken";
+$strings["remaining"]="Remaining";
+$strings["default"]="Default";
+$strings["specific"]="Specific";
+$strings["all_off_types"]="All time off types";
+$strings["timer"]="Timer";
+
 ?>
